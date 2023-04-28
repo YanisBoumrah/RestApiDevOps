@@ -1,43 +1,71 @@
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
+const fs = require('fs');
+
+// Créer un fichier JSON vide pour stocker les données
+const dbFilePath = 'db.json';
+if (!fs.existsSync(dbFilePath)) {
+  fs.writeFileSync(dbFilePath, JSON.stringify({ utilisateurs: [] }));
+}
 
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.send('Bienvenue sur notre Api !');
+  res.send('Bienvenue sur notre API REST !');
 });
 
 app.get('/utilisateurs', (req, res) => {
-  const utilisateurs = [];
-
+  const data = fs.readFileSync(dbFilePath);
+  const utilisateurs = JSON.parse(data).utilisateurs;
   res.json(utilisateurs);
 });
 
 app.get('/utilisateurs/:id', (req, res) => {
   const id = req.params.id;
-  // code pour récupérer l'utilisateur avec l'ID spécifié dans la base de données
-  const utilisateur = { id: id, nom: 'Jean', age: 30 };
+  const data = fs.readFileSync(dbFilePath);
+  const utilisateurs = JSON.parse(data).utilisateurs;
+  const utilisateur = utilisateurs.find((u) => u.id === parseInt(id));
   res.json(utilisateur);
 });
 
 app.post('/utilisateurs', (req, res) => {
   const utilisateur = req.body;
-  // code pour ajouter l'utilisateur à la base de données
+  const data = fs.readFileSync(dbFilePath);
+  const utilisateurs = JSON.parse(data).utilisateurs;
+  utilisateur.id = utilisateurs.length + 1;
+  utilisateurs.push(utilisateur);
+  fs.writeFileSync(dbFilePath, JSON.stringify({ utilisateurs: utilisateurs }));
   res.send('Utilisateur ajouté avec succès');
 });
 
 app.put('/utilisateurs/:id', (req, res) => {
   const id = req.params.id;
   const utilisateur = req.body;
-  // code pour mettre à jour l'utilisateur avec l'ID spécifié dans la base de données
-  res.send(`Utilisateur avec l'ID ${id} mis à jour avec succès`);
+  const data = fs.readFileSync(dbFilePath);
+  const utilisateurs = JSON.parse(data).utilisateurs;
+  const index = utilisateurs.findIndex((u) => u.id === parseInt(id));
+  if (index >= 0) {
+    utilisateurs[index] = { ...utilisateur, id: parseInt(id) };
+    fs.writeFileSync(dbFilePath, JSON.stringify({ utilisateurs: utilisateurs }));
+    res.send(`Utilisateur avec l'ID ${id} mis à jour avec succès`);
+  } else {
+    res.status(404).send(`Utilisateur avec l'ID ${id} non trouvé`);
+  }
 });
 
 app.delete('/utilisateurs/:id', (req, res) => {
   const id = req.params.id;
-  // code pour supprimer l'utilisateur avec l'ID spécifié de la base de données
-  res.send(`Utilisateur avec l'ID ${id} supprimé avec succès`);
+  const data = fs.readFileSync(dbFilePath);
+  const utilisateurs = JSON.parse(data).utilisateurs;
+  const index = utilisateurs.findIndex((u) => u.id === parseInt(id));
+  if (index >= 0) {
+    utilisateurs.splice(index, 1);
+    fs.writeFileSync(dbFilePath, JSON.stringify({ utilisateurs: utilisateurs }));
+    res.send(`Utilisateur avec l'ID ${id} supprimé avec succès`);
+  } else {
+    res.status(404).send(`Utilisateur avec l'ID ${id} non trouvé`);
+  }
 });
 
 app.listen(port, () => {
