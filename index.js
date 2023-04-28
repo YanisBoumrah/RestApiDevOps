@@ -12,13 +12,16 @@ if (!fs.existsSync(dbFilePath)) {
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.send('Bienvenue sur notre API REST !');
+  res.send('Bienvenue sur l\'API REST !');
 });
 
 app.get('/utilisateurs', (req, res) => {
   const data = fs.readFileSync(dbFilePath);
   const utilisateurs = JSON.parse(data).utilisateurs;
-  res.json(utilisateurs);
+  const utilisateursSimples = utilisateurs.map((u) => {
+    return { id: u.id, nom: u.nom, age: u.age };
+  });
+  res.json(utilisateursSimples);
 });
 
 app.get('/utilisateurs/:id', (req, res) => {
