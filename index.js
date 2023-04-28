@@ -9,11 +9,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/utilisateurs', (req, res) => {
-  const utilisateurs = [
-    { id: 1, nom: 'Jean', age: 30 },
-    { id: 2, nom: 'Marie', age: 25 },
-    { id: 3, nom: 'Pierre', age: 40 },
-  ];
+  const utilisateurs = [];
 
   res.json(utilisateurs);
 });
